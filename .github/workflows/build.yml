@@ -53,24 +53,14 @@ jobs:
             rm -rf _build
             unzip -q -o "$BEST" -d _build
           fi
-          if [ -n "$BEST" ]; then
-            SETTINGS=$(find _build -name settings.gradle | head -n 1)
-          else
-            SETTINGS=$(find . -name settings.gradle -not -path "./.git/*" | head -n 1)
-          fi
+          SETTINGS=$(find . -name settings.gradle -not -path "./.git/*" | head -n 1)
           if [ -z "$SETTINGS" ]; then
             echo "ERROR: no valid project zip and no settings.gradle found."
-            echo "Upload VideoInject_v11.zip (the whole zip, not unzipped) to the main folder of the repo."
+            echo "Upload VideoInject_v10.zip (the whole zip, not unzipped) to the main folder of the repo."
             exit 1
           fi
-          DIR=$(dirname "$SETTINGS")
-          VN=$(grep -o "versionName '[^']*'" "$DIR/app/build.gradle" | head -n 1 | grep -o "[0-9][0-9.]*")
-          VC=$(grep -o 'versionCode [0-9]*' "$DIR/app/build.gradle" | head -n 1 | grep -o '[0-9]*')
-          echo "PROJECT_DIR=$DIR" >> "$GITHUB_ENV"
-          echo "APK_NAME=VideoInject-v${VC}-APK" >> "$GITHUB_ENV"
-          echo "=============================================="
-          echo " BUILDING VERSION $VN (code $VC) from $DIR"
-          echo "=============================================="
+          echo "PROJECT_DIR=$(dirname "$SETTINGS")" >> "$GITHUB_ENV"
+          echo "Project found in $(dirname "$SETTINGS")"
 
       - name: Build
         working-directory: ${{ env.PROJECT_DIR }}
@@ -79,5 +69,5 @@ jobs:
       - name: Save the APK
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.APK_NAME }}
+          name: VideoInject-APK
           path: ${{ env.PROJECT_DIR }}/app/build/outputs/apk/debug/app-debug.apk
