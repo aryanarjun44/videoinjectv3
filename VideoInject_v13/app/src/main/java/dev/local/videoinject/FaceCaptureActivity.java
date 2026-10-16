@@ -482,7 +482,7 @@ public class FaceCaptureActivity extends Activity implements TextureView.Surface
             canvas.drawLine(cx, oval.top - g, cx, oval.top - g - t, tickPaint);
             canvas.drawLine(cx, oval.bottom + g, cx, oval.bottom + g + t, tickPaint);
             canvas.drawLine(oval.left - g, cy, oval.left - g - t, cy, tickPaint);
-            canvas.drawLine(oval.right + g, cy, oval.right + g + t, tickPaint);
+            canvas.drawLine(oval.right + g, cy, oval.right + g + t, cy, tickPaint);
         } finally {
             holder.unlockCanvasAndPost(canvas);
         }
