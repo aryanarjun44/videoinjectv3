@@ -25,7 +25,20 @@ jobs:
         with:
           packages: 'platform-tools platforms;android-34 build-tools;34.0.0'
 
+      - name: Find project root
+        id: find
+        run: |
+          if [ -f "settings.gradle" ]; then
+            echo "dir=." >> "$GITHUB_OUTPUT"
+          elif [ -f "VideoInjectModule/settings.gradle" ]; then
+            echo "dir=VideoInjectModule" >> "$GITHUB_OUTPUT"
+          else
+            found=$(find . -name "settings.gradle" -not -path "./.gradle/*" | head -1)
+            echo "dir=$(dirname "$found")" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Generate Gradle wrapper
+        working-directory: ${{ steps.find.outputs.dir }}
         run: gradle wrapper --gradle-version 8.7
 
       - name: Cache Gradle
@@ -37,10 +50,11 @@ jobs:
           key: gradle-${{ hashFiles('**/*.gradle*') }}
 
       - name: Build debug APK
+        working-directory: ${{ steps.find.outputs.dir }}
         run: ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: VideoInject-v13-debug
-          path: app/build/outputs/apk/debug/*.apk
+          path: ${{ steps.find.outputs.dir }}/app/build/outputs/apk/debug/*.apk
