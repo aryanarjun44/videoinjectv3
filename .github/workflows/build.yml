@@ -35,28 +35,16 @@ jobs:
       - name: Find the project
         run: |
           shopt -s nullglob
-          echo "Files in the repo:"
-          ls -la
-          BEST=""; BESTV=-1
-          for z in *.zip; do
-            if ! unzip -tq "$z" > /dev/null 2>&1; then
-              echo "SKIP $z : not a valid zip (upload it again)"
-              continue
-            fi
-            V=$(unzip -p "$z" '*/app/build.gradle' 2>/dev/null | grep -o 'versionCode [0-9]*' | grep -o '[0-9]*' | head -n 1)
-            V=${V:-0}
-            echo "Found $z (version code $V)"
-            if [ "$V" -gt "$BESTV" ]; then BEST="$z"; BESTV="$V"; fi
-          done
-          if [ -n "$BEST" ]; then
-            echo "Using $BEST"
-            rm -rf _build
-            unzip -q -o "$BEST" -d _build
+          # use only the NEWEST zip, so old zips in the repo cannot overwrite it
+          NEWEST=$(ls -t *.zip 2>/dev/null | head -n 1)
+          if [ -n "$NEWEST" ]; then
+            echo "Unzipping $NEWEST"
+            unzip -q -o "$NEWEST" -d _build
           fi
           SETTINGS=$(find . -name settings.gradle -not -path "./.git/*" | head -n 1)
           if [ -z "$SETTINGS" ]; then
-            echo "ERROR: no valid project zip and no settings.gradle found."
-            echo "Upload VideoInject_v10.zip (the whole zip, not unzipped) to the main folder of the repo."
+            echo "Could not find settings.gradle. Files in the repo:"
+            find . -maxdepth 3 -not -path "./.git/*"
             exit 1
           fi
           echo "PROJECT_DIR=$(dirname "$SETTINGS")" >> "$GITHUB_ENV"
